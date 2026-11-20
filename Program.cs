@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -12,18 +13,39 @@ namespace HttpNewsPAT_Osennikov
     {
         static void Main(string[] args)
         {
-            WebRequest request = WebRequest.Create("http://10.111.20.114/main");
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            Console.WriteLine(response.StatusDescription);
-            Stream dataStream = response.GetResponseStream();
-            StreamReader reader = new StreamReader(dataStream);
-            string responseFromServer = reader.ReadToEnd();
-            Console.WriteLine(responseFromServer);
-            reader.Close();
-            dataStream.Close();
-            response.Close();
+            //WebRequest request = WebRequest.Create("http://10.111.20.114/main");
+            //HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+            //Console.WriteLine(response.StatusDescription);
+            //Stream dataStream = response.GetResponseStream();
+            //StreamReader reader = new StreamReader(dataStream);
+            //string responseFromServer = reader.ReadToEnd();
+            //Console.WriteLine(responseFromServer);
+            //reader.Close();
+            //dataStream.Close();
+            //response.Close();
+            SingIn("user", "user");
             Console.Read();
+        }
 
+        public static void SingIn(string Login, string Password)
+        {
+            string url = "http://10.111.20.114/ajax/login.php";
+            Debug.WriteLine($"Выполняется запрос: {url}");
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.Method = "POST";
+            request.ContentType = "application/x-www-form-urlencoded";
+            request.CookieContainer = new CookieContainer();
+            string postData = $"login={Login}&password={Password}";
+            byte[] Data = Encoding.UTF8.GetBytes(postData);
+            request.ContentLength = Data.Length;
+            using (var stream = request.GetRequestStream())
+            {
+                stream.Write(Data, 0, Data.Length);
+            }
+            HttpWebResponse response = ( HttpWebResponse)request.GetResponse();
+            Debug.WriteLine($"Статус: {response.StatusDescription}");
+            string responseFromServer = new StreamReader(response.GetResponseStream()).ReadToEnd();
+            Console.WriteLine(responseFromServer);
         }
     }
 }

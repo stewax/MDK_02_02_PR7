@@ -23,11 +23,12 @@ namespace HttpNewsPAT_Osennikov
             //reader.Close();
             //dataStream.Close();
             //response.Close();
-            SingIn("user", "user");
+            string token = SingIn("user", "user");
+            GetContent(new Cookie("token", token, "/", "permaviat.ru"));
             Console.Read();
         }
 
-        public static void SingIn(string Login, string Password)
+        public static string SingIn(string Login, string Password)
         {
             string url = "http://10.111.20.114/ajax/login.php";
             Debug.WriteLine($"Выполняется запрос: {url}");
@@ -41,8 +42,22 @@ namespace HttpNewsPAT_Osennikov
             using (var stream = request.GetRequestStream())
             {
                 stream.Write(Data, 0, Data.Length);
-            }
+            }       
             HttpWebResponse response = ( HttpWebResponse)request.GetResponse();
+            Debug.WriteLine($"Cookie token: {response.Cookies[0].Value}");
+            Debug.WriteLine($"Статус: {response.StatusDescription}");
+            string responseFromServer = new StreamReader(response.GetResponseStream()).ReadToEnd();
+            Console.WriteLine(responseFromServer);
+            return response.Cookies[0].Value;
+        }
+        public static void GetContent(Cookie Token)
+        {
+            string url = "http://10.111.20.114/main";
+            Debug.WriteLine($"Выполняется запрос: {url}");
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.CookieContainer = new CookieContainer();
+            request.CookieContainer.Add(Token);
+            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
             Debug.WriteLine($"Статус: {response.StatusDescription}");
             string responseFromServer = new StreamReader(response.GetResponseStream()).ReadToEnd();
             Console.WriteLine(responseFromServer);
